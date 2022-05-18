@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>给妈妈的爱</title>
+    </title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .heart {
+            width: 400px;
+            margin: 100px auto;
+            position: relative;
+        }
+
+        .snowfall-flakes:before,
+        .snowfall-flakes:after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            display: block;
+            background: red;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .snowfall-flakes:before {
+            transform: rotate(-45deg);
+        }
+
+        .snowfall-flakes:after {
+            transform: rotate(45deg);
+            left: 7px;
+        }
+
+        body {
+            overflow: hidden;
+            background: url("images/mother.jpg");
+            background-position: center;
+            background-size: 50%;
+            background-repeat: no-repeat;
+
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="heart">
+        <!-- <div class="lovefall"></div> -->
+    </div>
+    <script>
+
+        if (!Date.now)
+            Date.now = function () { return new Date().getTime(); };
+
+        (function () {
+            'use strict';
+
+            var vendors = ['webkit', 'moz'];
+            for (var i = 0; i < vendors.length && !window.requestAnimationFrame; ++i) {
+                var vp = vendors[i];
+                window.requestAnimationFrame = window[vp + 'RequestAnimationFrame'];
+                window.cancelAnimationFrame = (window[vp + 'CancelAnimationFrame']
+                    || window[vp + 'CancelRequestAnimationFrame']);
+            }
+            if (/iP(ad|hone|od).*OS 6/.test(window.navigator.userAgent) // iOS6 is buggy
+                || !window.requestAnimationFrame || !window.cancelAnimationFrame) {
+                var lastTime = 0;
+                window.requestAnimationFrame = function (callback) {
+                    var now = Date.now();
+                    var nextTime = Math.max(lastTime + 16, now);
+                    return setTimeout(function () { callback(lastTime = nextTime); },
+                        nextTime - now);
+                };
+                window.cancelAnimationFrame = clearTimeout;
+            }
+        }());
+
+        (function ($) {
+            $.snowfall = function (element, options) {
+                var flakes = [],
+                    defaults = {
+                        flakeCount: 35,
+                        flakeColor: '#ffffff',
+                        flakePosition: 'absolute',
+                        flakeIndex: 999999,
+                        minSize: 1,
+                        maxSize: 2,
+                        minSpeed: 1,
+                        maxSpeed: 5,
+                        round: false,
+                        shadow: false,
+                        collection: false,
+                        collectionHeight: 40,
+                        deviceorientation: false
+                    },
+                    options = $.extend(defaults, options),
+                    random = function random(min, max) {
+                        return Math.round(min + Math.random() * (max - min));
+                    };
+
+                $(element).data("snowfall", this);
+
+                // Snow flake object
+                function Flake(_x, _y, _size, _speed) {
+                    // Flake properties
+                    this.x = _x;
+                    this.y = _y;
+                    this.size = _size;
+                    this.speed = _speed;
+                    this.step = 0;
+                    this.stepSize = random(1, 10) / 100;
+
+                    if (options.collection) {
+                        this.target = canvasCollection[random(0, canvasCollection.length - 1)];
+                    }
+
+                    var flakeMarkup = null;
+
+                    if (options.image) {
+                        flakeMarkup = document.createElement("img");
+                        flakeMarkup.src = options.image;
+                    } else {
+                        flakeMarkup = document.createElement("div");
+                        $(flakeMarkup).css({ 'background': options.flakeColor });
+                    }
+
+                    $(flakeMarkup).attr({
+                        'class': 'snowfall-flakes',
+                    }).css({
+                        'width': this.size,
+                        'height': this.size,
+                        'position': options.flakePosition,
+                        'top': this.y,
+                        'left': this.x,
+                        'fontSize': 0,
+                        'zIndex': options.flakeIndex
+                    });
+
+                    if ($(element).get(0).tagName === $(document).get(0).tagName) {
+                        $('body').append($(flakeMarkup));
+                        element = $('body');
+                    } else {
+                        $(element).append($(flakeMarkup));
+                    }
+
+                    this.element = flakeMarkup;
+
+                    // Update function, used to update the snow flakes, and checks current snowflake against bounds
+                    this.update = function () {
+                        this.y += this.speed;
+
+                        if (this.y > (elHeight) - (this.size + 6)) {
+                            this.reset();
+                        }
+                        console.log(this.element.style.top, this.y)
+                        console.log(this.element.style.left, this.x)
+                        this.element.style.top = this.y + 'px';
+                        this.element.style.left = this.x + 'px';
+
+                        this.step += this.stepSize;
+
+                        if (doRatio === false) {
+                            this.x += Math.cos(this.step);
+                        } else {
+                            this.x += (doRatio + Math.cos(this.step));
+                        }
+
+                        if (this.x + this.size > (elWidth) - widthOffset || this.x < widthOffset) {
+                            this.reset();
+                        }
+                    }
+
+                    // Resets the snowflake once it reaches one of the bounds set
+                    this.reset = function () {
+                        this.y = 0;
+                        this.x = random(widthOffset, elWidth - widthOffset);
+                        this.stepSize = random(1, 10) / 100;
+                        this.size = random((options.minSize * 100), (options.maxSize * 100)) / 100;
+                        this.element.style.width = this.size + 'px';
+                        this.element.style.height = this.size + 'px';
+                        this.speed = random(options.minSpeed, options.maxSpeed);
+                    }
+                }
+
+                // local vars
+                var i = 0,
+                    elHeight = $(element).height(),
+                    elWidth = $(element).width(),
+                    widthOffset = 0,
+                    snowTimeout = 0;
+
+
+                // This will reduce the horizontal scroll bar from displaying, when the effect is applied to the whole page
+                if ($(element).get(0).tagName === $(document).get(0).tagName) {
+                    widthOffset = 25;
+                }
+
+                // // Bind the window resize event so we can get the innerHeight again
+                // $(window).bind("resize", function () {
+                //     elHeight = $(element)[0].clientHeight;
+                //     elWidth = $(element)[0].offsetWidth;
+                // });
+
+
+                // initialize the flakes
+                for (i = 0; i < options.flakeCount; i += 1) {
+                    flakes.push(new Flake(random(widthOffset, elWidth - widthOffset), random(0, elHeight), random((options.minSize * 100), (options.maxSize * 100)) / 100, random(options.minSpeed, options.maxSpeed)));
+                }
+
+                // This adds the style to make the snowflakes round via border radius property
+                if (options.round) {
+                    $('.snowfall-flakes').css({ '-moz-border-radius': options.maxSize, '-webkit-border-radius': options.maxSize, 'border-radius': options.maxSize });
+                }
+
+                // This adds shadows just below the snowflake so they pop a bit on lighter colored web pages
+                if (options.shadow) {
+                    $('.snowfall-flakes').css({ '-moz-box-shadow': '1px 1px 1px #555', '-webkit-box-shadow': '1px 1px 1px #555', 'box-shadow': '1px 1px 1px #555' });
+                }
+
+                // On newer Macbooks Snowflakes will fall based on deviceorientation
+                var doRatio = false;
+                if (options.deviceorientation) {
+                    $(window).bind('deviceorientation', function (event) {
+                        doRatio = event.originalEvent.gamma * 0.1;
+                    });
+                }
+
+                // this controls flow of the updating snow
+                function snow() {
+                    for (i = 0; i < flakes.length; i += 1) {
+                        flakes[i].update();
+                    }
+
+                    snowTimeout = requestAnimationFrame(function () { snow() });
+                }
+
+                snow();
+
+                // clears the snowflakes
+                this.clear = function () {
+                    $('.snowfall-canvas').remove();
+                    $(element).children('.snowfall-flakes').remove();
+                    cancelAnimationFrame(snowTimeout);
+                }
+            };
+
+            // Initialize the options and the plugin
+            $.fn.snowfall = function (options) {
+                if (typeof (options) == "object" || options == undefined) {
+                    return this.each(function (i) {
+                        (new $.snowfall(this, options));
+                    });
+                } else if (typeof (options) == "string") {
+                    return this.each(function (i) {
+                        var snow = $(this).data('snowfall');
+                        if (snow) {
+                            snow.clear();
+                        }
+                    });
+                }
+            };
+        })(jQuery);
+    </script>
+    <script>
+        $(function () {
+            setTimeout(function () {
+                $(document).snowfall({
+                    flakeCount: 30, //设置爱心数目
+                    flakeColor: 'none',
+                })
+            }, 2000);
+        })
+    </script>
+</body>
+
+</html>
