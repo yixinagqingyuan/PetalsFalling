@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        .heart {
+            height: 100vh;
+            position: relative;
+            margin: 100px;
+        }
+
+        .snowfall-flakes {
+            height: 100%;
+        }
+
+        .snowfall-flakes::before,
+        .snowfall-flakes::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            display: block;
+            background: red;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .snowfall-flakes::before {
+            transform: rotate(-45deg);
+        }
+
+        .snowfall-flakes::after {
+            transform: rotate(45deg);
+            left: 7px;
+        }
+    </style>
+    <div class="heart" ref='element'>
+        <div class="snowfall-flakes"></div>
+    </div>
+
+</body>
+
+</html>
